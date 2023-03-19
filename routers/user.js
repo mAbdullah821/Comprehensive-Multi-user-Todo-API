@@ -57,4 +57,51 @@ router.get('/', async (req, res, next) => {
   }
 });
 
+router.delete('/:id', async (req, res, next) => {
+  try {
+    const id = req.params.id;
+
+    isValidId(id);
+
+    const user = await User.findOneAndDelete({ _id: id });
+    if (!user) throw new Error('There is no user with that id');
+
+    res.send('User deleted successfully');
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.patch('/:id', async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const { password, firstName } = req.body;
+
+    isValidId(id);
+
+    if (!password && !firstName)
+      throw new Error(
+        'Please provide the user attributes to edit, valid attributes: {password, firstName}'
+      );
+
+    const user = await User.findOne({ _id: id });
+
+    if (password) user.password = password;
+    if (firstName) user.firstName = firstName;
+    await user.save();
+    const { _id, username } = user;
+    res.send({
+      message: 'user was edited successfully',
+      user: { _id, username, firstName },
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+const isValidId = (id) => {
+  const isValid = mongoose.isValidObjectId(id);
+  if (!isValid) throw new Error('This is not a valid id, use a valid one');
+};
+
 module.exports = router;
