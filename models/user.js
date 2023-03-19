@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const { strLengthValidator } = require('./validators');
+const Todo = require('./todo');
 
 const userSchema = new mongoose.Schema({
   username: {
@@ -38,7 +39,7 @@ userSchema.statics.findByCredentials = async function (username, password) {
 };
 
 userSchema.virtual('todos', {
-  ref: 'Todo',
+  ref: Todo,
   localField: '_id',
   foreignField: 'userId',
 });
