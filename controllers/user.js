@@ -1,5 +1,5 @@
-const User = require('../models/user');
 const mongoose = require('mongoose');
+const User = require('../models/user');
 
 const register = async (req, res, next) => {
   const { username, password, firstName } = req.body;
@@ -7,6 +7,7 @@ const register = async (req, res, next) => {
     await User.create({ username, password, firstName });
     res.send({ message: 'user was registered successfully' });
   } catch (err) {
+    err.statusCode = 404;
     next(err);
   }
 };
@@ -32,17 +33,23 @@ const login = async (req, res, next) => {
       todos,
     });
   } catch (err) {
+    err.statusCode = 404;
     next(err);
   }
 };
 
 const logout = (req, res, next) => {
-  if (!req.session.userId) throw new Error('You are already logged out');
+  try {
+    if (!req.session.userId) throw new Error('You are already logged out');
 
-  req.session.destroy((err) => {
-    if (err) return next(err);
-    res.send({ message: 'Logout successfully' });
-  });
+    req.session.destroy((err) => {
+      if (err) return next(err);
+      res.send({ message: 'Logout successfully' });
+    });
+  } catch (err) {
+    err.statusCode = 404;
+    next(err);
+  }
 };
 
 const getAllUsersFirstName = async (req, res, next) => {
@@ -50,6 +57,7 @@ const getAllUsersFirstName = async (req, res, next) => {
     const users = await User.find().select('firstName');
     res.send(users);
   } catch (err) {
+    err.statusCode = 404;
     next(err);
   }
 };
@@ -70,6 +78,7 @@ const deleteUser = async (req, res, next) => {
 
     res.send({ message: 'User deleted successfully' });
   } catch (err) {
+    err.statusCode = 404;
     next(err);
   }
 };
@@ -97,6 +106,7 @@ const editUser = async (req, res, next) => {
       user: { _id, username, firstName },
     });
   } catch (err) {
+    err.statusCode = 404;
     next(err);
   }
 };

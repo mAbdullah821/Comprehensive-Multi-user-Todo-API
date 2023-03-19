@@ -48,8 +48,11 @@ app.listen(PORT, (err) => {
 });
 
 const handleErrors = function (err) {
-  // console.log(err.errors);
+  err.statusCode = err.statusCode || 500;
+
   let errors = err.message;
+  if (err.statusCode >= 500) errors = ['internal server error'];
+
   if (err.message.startsWith('User validation failed'))
     errors = Object.values(err.errors).map(({ message }) => message);
   if (err.code === 11000) errors = ['That <username> is already registered'];
