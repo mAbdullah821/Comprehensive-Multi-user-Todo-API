@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const User = require('../models/user');
 const Todo = require('../models/todo');
 
@@ -33,6 +34,24 @@ router.post('/login', async (req, res, next) => {
       username: user.username,
       todos,
     });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/logout', (req, res, next) => {
+  if (!req.session.userId) throw new Error('You are already logged out');
+
+  req.session.destroy((err) => {
+    if (err) return next(err);
+    res.send('Logout successfully');
+  });
+});
+
+router.get('/', async (req, res, next) => {
+  try {
+    const users = await User.find().select('firstName');
+    res.send(users);
   } catch (err) {
     next(err);
   }
