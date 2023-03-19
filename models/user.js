@@ -1,10 +1,12 @@
 const mongoose = require('mongoose');
+const { strLengthValidator } = require('./validators');
 
 const userSchema = new mongoose.Schema({
   username: {
     type: String,
     required: [true, 'Please enter the <username> attribute'],
     unique: true,
+    set: (v) => v.toLowerCase(),
   },
   password: {
     type: String,
@@ -13,8 +15,8 @@ const userSchema = new mongoose.Schema({
   firstName: {
     type: String,
     required: true,
-    minLength: [3, 'First name must be more than or equal <3> characters'],
-    maxLength: [3, 'First name must be less than or equal <15> characters'],
+    validate: (firstName) =>
+      strLengthValidator(firstName, 'first name', { min: 3, max: 15 }),
   },
   age: {
     type: Number,
