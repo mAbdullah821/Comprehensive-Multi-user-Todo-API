@@ -1,16 +1,31 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const cookieParser = require('cookie-parser');
+const session = require('express-session');
 const userRouter = require('./routers/user');
-// const bodyParser = require('body-parser')
 
 const PORT = 3000;
 const dbURI = 'mongodb://127.0.0.1:27017/todoAppV1';
 const app = express();
 
-// app.use(bodyParser.json());
+// creating 24 hours from milliseconds
+const oneDay = 1000 * 60 * 60 * 24;
 app.use(express.json());
-app.use(cookieParser());
+app.use(
+  session({
+    name: 'userId',
+    secret: 'simple-secret-for-now',
+    resave: false,
+    saveUninitialized: true,
+    cookie: { maxAge: oneDay },
+  })
+);
+
+function isAuthenticated(req, res, next) {
+  if (req.session.userId) {
+    return next();
+  }
+  next(new Error('Please login first'));
+}
 
 const establishDBConnection = async function () {
   await mongoose.connect(dbURI);

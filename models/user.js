@@ -30,12 +30,18 @@ const userSchema = new mongoose.Schema({
 });
 
 userSchema.statics.findByCredentials = async function (username, password) {
-  const user = await this.find({ username });
+  const [user] = await this.find({ username });
   if (!user) throw new Error('Username is not registered');
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) throw new Error('Password is not correct');
   return user;
 };
+
+userSchema.virtual('todos', {
+  ref: 'Todo',
+  localField: '_id',
+  foreignField: 'userId',
+});
 
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
