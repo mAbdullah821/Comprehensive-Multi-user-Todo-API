@@ -7,18 +7,21 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please enter the <username> attribute'],
     unique: true,
-    set: (v) => v.toLowerCase(),
+    set: (v) => {
+      if (v) return v.toLowerCase();
+      return v;
+    },
   },
   password: {
     type: String,
-    required: true,
+    required: [true, 'Please enter the <password> attribute'],
     minLength: [6, 'Password must be at least 6 characters'],
   },
   firstName: {
     type: String,
-    required: true,
+    required: [true, 'Please enter the <firstName> attribute'],
     validate: (firstName) =>
-      strLengthValidator(firstName, 'first name', { min: 3, max: 15 }),
+      strLengthValidator(firstName, 'firstName', { min: 3, max: 15 }),
   },
   age: {
     type: Number,
