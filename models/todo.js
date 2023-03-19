@@ -27,6 +27,12 @@ const todoSchema = new mongoose.Schema(
     status: {
       type: String,
       default: 'to-do',
+      set: (v) => v.toLowerCase(),
+      enum: {
+        values: ['to-do', 'done', 'in progress'],
+        message:
+          '<{VALUE}> is not a supported status, choose one from [to-do, in progress, done]',
+      },
     },
     tags: {
       type: [String],
