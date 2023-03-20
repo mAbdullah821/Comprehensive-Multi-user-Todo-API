@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
 const User = require('../models/user');
+const { isValidId } = require('./helperFunctions');
 
 const register = async (req, res, next) => {
   const { username, password, firstName } = req.body;
@@ -60,11 +60,6 @@ const getAllUsersFirstName = async (req, res, next) => {
     err.statusCode = 404;
     next(err);
   }
-};
-
-const isValidId = (id) => {
-  const isValid = mongoose.isValidObjectId(id);
-  if (!isValid) throw new Error('This is not a valid id, use a valid one');
 };
 
 const deleteUser = async (req, res, next) => {

@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
 const Todo = require('../models/todo');
+const { isValidId } = require('./helperFunctions');
 
 const createTodo = async (req, res, next) => {
   try {
@@ -28,7 +28,23 @@ const getTodosWithLimit = async (req, res, next) => {
   }
 };
 
+const getTodoById = async (req, res, next) => {
+  try {
+    const userId = req.session.userId;
+    const todoId = req.params.id;
+
+    isValidId(todoId);
+
+    const todo = await Todo.findOne({ _id: todoId, userId });
+    res.send(todo);
+  } catch (err) {
+    err.statusCode = 404;
+    next(err);
+  }
+};
+
 module.exports = {
   createTodo,
   getTodosWithLimit,
+  getTodoById,
 };
