@@ -2,12 +2,21 @@ const mongoose = require('mongoose');
 const { strLengthValidator } = require('./validators');
 
 const tagValidator = {
-  validator: function (v) {
-    return v.every((tag) => tag.length <= 10);
-  },
-  message: (props) => {
-    const longTags = props.value.filter((tag) => tag.length > 10);
-    return `The tags: [${longTags}] exceeds the maximum length of 10 characters!`;
+  validator: function (tags) {
+    const isValidTagArrayLength = tags.length <= 10;
+    if (!isValidTagArrayLength) {
+      const errMessage = `The tags array exceeded the allowed length of 10, got ${tags.length} tags`;
+      throw new Error(errMessage);
+    }
+
+    const isValidTagLength = tags.every((tag) => tag.length <= 10);
+    if (!isValidTagLength) {
+      const longTags = tags.filter((tag) => tag.length > 10);
+      const errMessage = `The tags: [${longTags}] exceeds the maximum length of 10 characters!`;
+      throw new Error(errMessage);
+    }
+
+    return true;
   },
 };
 
@@ -36,6 +45,7 @@ const todoSchema = new mongoose.Schema(
     },
     tags: {
       type: [String],
+      set: (arr) => arr.map((tag) => tag.toLowerCase()),
       validate: tagValidator,
     },
   },
