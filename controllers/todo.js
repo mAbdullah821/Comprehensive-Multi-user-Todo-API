@@ -94,10 +94,28 @@ const editTodo = async (req, res, next) => {
   }
 };
 
+const removeTodo = async (req, res, next) => {
+  try {
+    const userId = req.session.userId;
+    const todoId = req.params.id;
+
+    isValidId(todoId);
+
+    const todo = await Todo.findOneAndDelete({ _id: todoId, userId });
+
+    if (!todo) throw new Error('Not found any todo with that <id>');
+
+    res.send({ message: 'Delete a Todo successfully', todo });
+  } catch (err) {
+    err.statusCode = 404;
+    next(err);
+  }
+};
 module.exports = {
   createTodo,
   todosPagination,
   getTodoById,
   todosPaginationUsingTags,
   editTodo,
+  removeTodo,
 };
