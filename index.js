@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const session = require('express-session');
 const userRouter = require('./routers/user');
+const todoRouter = require('./routers/todo');
 
 const PORT = 3000;
 const dbURI = 'mongodb://127.0.0.1:27017/todoAppV1';
@@ -24,7 +25,9 @@ function isAuthenticated(req, res, next) {
   if (req.session.userId) {
     return next();
   }
-  next(new Error('Please login first'));
+  const err = new Error('Please login first');
+  err.statusCode = 404;
+  next(err);
 }
 
 const establishDBConnection = async function () {
@@ -33,13 +36,16 @@ const establishDBConnection = async function () {
 };
 
 app.use('/users', userRouter);
+app.use('/todos', isAuthenticated, todoRouter);
+
+app.use((req, res) => {
+  res
+    .status(404)
+    .send({ errors: [`Can't find this endpoint: ${req.method} ${req.path}`] });
+});
 
 app.use((err, req, res, next) => {
   res.status(401).send(handleErrors(err));
-});
-
-app.use((req, res) => {
-  res.status(404).send(`Can't find this endpoint: ${req.method} ${req.path}`);
 });
 
 app.listen(PORT, (err) => {
@@ -53,7 +59,7 @@ const handleErrors = function (err) {
   let errors = err.message;
   if (err.statusCode >= 500) errors = ['internal server error'];
 
-  if (err.message.startsWith('User validation failed'))
+  if (err.message.includes('validation failed'))
     errors = Object.values(err.errors).map(({ message }) => message);
   if (err.code === 11000) errors = ['That <username> is already registered'];
   console.log(err);
