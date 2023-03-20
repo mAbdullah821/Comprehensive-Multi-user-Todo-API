@@ -67,9 +67,37 @@ const todosPaginationUsingTags = async (req, res, next) => {
   }
 };
 
+const editTodo = async (req, res, next) => {
+  try {
+    const userId = req.session.userId;
+    const todoId = req.params.id;
+    const { title, status, tags } = req.body;
+
+    isValidId(todoId);
+
+    if (!title && !status && !tags)
+      throw new Error(
+        'Please, Provide some attributes for editing, choose from {title, status, tags}'
+      );
+
+    let todo = await Todo.findOne({ _id: todoId, userId });
+
+    if (title) todo.title = title;
+    if (status) todo.status = status;
+    if (tags) todo.tags = tags;
+
+    todo = await todo.save();
+    res.send({ message: 'Todo edited successfully', todo });
+  } catch (err) {
+    err.statusCode = 404;
+    next(err);
+  }
+};
+
 module.exports = {
   createTodo,
   todosPagination,
   getTodoById,
   todosPaginationUsingTags,
+  editTodo,
 };
