@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Todo = require('../models/todo');
 const { isValidId } = require('./helperFunctions');
 
@@ -43,8 +44,32 @@ const getTodoById = async (req, res, next) => {
   }
 };
 
+const getTodosByTags = async (req, res, next) => {
+  try {
+    const userId = new mongoose.Types.ObjectId(req.session.userId);
+    const { skip = '0', limit = '10' } = req.query;
+    let { tags } = req.body;
+
+    if (!tags) throw new Error('Please, Provide some tags');
+    tags = tags.map((tag) => tag.toString().toLowerCase());
+
+    const todos = await Todo.todoPaginationByTags({
+      userId,
+      tags,
+      skip,
+      limit,
+    }); // skip: String (ex. "2") || limit: String (ex. "5")
+
+    res.send({ resultsCount: todos.length, todos });
+  } catch (err) {
+    err.statusCode = 404;
+    next(err);
+  }
+};
+
 module.exports = {
   createTodo,
   getTodosWithLimit,
   getTodoById,
+  getTodosByTags,
 };
