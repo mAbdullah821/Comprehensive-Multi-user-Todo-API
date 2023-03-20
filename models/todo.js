@@ -52,5 +52,27 @@ const todoSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+todoSchema.statics.todoPaginationByTags = function ({
+  userId,
+  tags,
+  skip,
+  limit,
+}) {
+  return this.aggregate()
+    .match({ userId })
+    .project({
+      title: 1,
+      status: 1,
+      tags: 1,
+      matchedTags: { $setIntersection: ['$tags', tags] },
+    })
+    .addFields({
+      matchedTagsCount: { $size: '$matchedTags' },
+    })
+    .match({ matchedTagsCount: { $gt: 0 } })
+    .sort({ matchedTagsCount: -1 })
+    .skip(+skip)
+    .limit(+limit);
+};
 const Todo = new mongoose.model('Todo', todoSchema);
 module.exports = Todo;
