@@ -2,14 +2,14 @@ const express = require('express');
 const router = express.Router();
 const {
   createTodo,
-  getTodosWithLimit,
+  todosPagination,
   getTodoById,
-  getTodosByTags,
+  todosPaginationUsingTags,
 } = require('../controllers/todo');
 
 router.post('/', createTodo);
-router.get('/', getTodosWithLimit);
-router.get('/tags/', getTodosByTags);
+router.get('/', todosPagination);
+router.get('/tags/', todosPaginationUsingTags);
 router.get('/:id', getTodoById);
 
 module.exports = router;

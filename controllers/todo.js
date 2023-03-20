@@ -14,7 +14,7 @@ const createTodo = async (req, res, next) => {
   }
 };
 
-const getTodosWithLimit = async (req, res, next) => {
+const todosPagination = async (req, res, next) => {
   try {
     const userId = req.session.userId;
     const { skip = '0', limit = '10' } = req.query; // default values [skip = '0'] [limit = '10']
@@ -22,7 +22,7 @@ const getTodosWithLimit = async (req, res, next) => {
       // .sort('createdAt')
       .skip(+skip)
       .limit(+limit);
-    res.send(todos);
+    res.send({ resultsCount: todos.length, todos });
   } catch (err) {
     err.statusCode = 404;
     next(err);
@@ -44,7 +44,7 @@ const getTodoById = async (req, res, next) => {
   }
 };
 
-const getTodosByTags = async (req, res, next) => {
+const todosPaginationUsingTags = async (req, res, next) => {
   try {
     const userId = new mongoose.Types.ObjectId(req.session.userId);
     const { skip = '0', limit = '10' } = req.query;
@@ -69,7 +69,7 @@ const getTodosByTags = async (req, res, next) => {
 
 module.exports = {
   createTodo,
-  getTodosWithLimit,
+  todosPagination,
   getTodoById,
-  getTodosByTags,
+  todosPaginationUsingTags,
 };
