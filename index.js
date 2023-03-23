@@ -62,6 +62,6 @@ const handleErrors = function (err) {
   if (err.message.includes('validation failed'))
     errors = Object.values(err.errors).map(({ message }) => message);
   if (err.code === 11000) errors = ['That <username> is already registered'];
-  // console.log(err);
+  console.log(err);
   return { errors };
 };

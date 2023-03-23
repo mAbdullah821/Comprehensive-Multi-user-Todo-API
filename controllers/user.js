@@ -2,9 +2,10 @@ const User = require('../models/user');
 const { isValidId } = require('./helperFunctions');
 
 const register = async (req, res, next) => {
-  const { username, password, firstName } = req.body;
   try {
-    await User.create({ username, password, firstName });
+    const { username, password, firstName, age } = req.body;
+
+    await User.create({ username, password, firstName, age });
     res.send({ message: 'user was registered successfully' });
   } catch (err) {
     err.statusCode = 404;
@@ -15,10 +16,6 @@ const register = async (req, res, next) => {
 const login = async (req, res, next) => {
   try {
     const { username, password } = req.body;
-    if (!username || !password)
-      throw new Error(
-        'Please, Provide all required attributes {username, password}'
-      );
     const user = await User.findByCredentials(username, password);
 
     req.session.regenerate((err) => {
@@ -69,9 +66,6 @@ const getAllUsersFirstName = async (req, res, next) => {
 const deleteUser = async (req, res, next) => {
   try {
     const id = req.params.id;
-
-    isValidId(id);
-
     const user = await User.findOneAndDelete({ _id: id });
     if (!user) throw new Error('There is no user with that id');
 
@@ -85,24 +79,19 @@ const deleteUser = async (req, res, next) => {
 const editUser = async (req, res, next) => {
   try {
     const id = req.params.id;
-    const { password, firstName } = req.body;
-
-    isValidId(id);
-
-    if (!password && !firstName)
-      throw new Error(
-        'Please provide the user attributes to edit, valid attributes: {password, firstName}'
-      );
-
+    const { password, firstName, age } = req.body;
     const user = await User.findOne({ _id: id });
 
     if (password) user.password = password;
     if (firstName) user.firstName = firstName;
+    if (age) user.age = age;
+
     await user.save();
+
     const { _id, username } = user;
     res.send({
       message: 'user was edited successfully',
-      user: { _id, username, firstName },
+      user: { _id, username, firstName, age },
     });
   } catch (err) {
     err.statusCode = 404;
