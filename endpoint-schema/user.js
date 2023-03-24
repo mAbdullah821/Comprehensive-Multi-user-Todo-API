@@ -1,6 +1,7 @@
 const schemaValidation = require('./schema-validation');
-const { body, oneOf } = require('express-validator');
+const { body } = require('express-validator');
 const User = require('../models/user');
+const { unique, optionalAttributesToEdit } = require('./helperFunctions');
 const { id } = require('../input-validator/general');
 const {
   username,
@@ -9,36 +10,21 @@ const {
   age,
 } = require('../input-validator/user');
 
-const unique = (chain, attribute) => {
-  return chain.custom((value) =>
-    User.findOne({ [attribute]: value }).then((user) => {
-      if (user) {
-        throw new Error(`${attribute} already exists`);
-      }
-    })
-  );
-};
-
 const registerSchema = [
-  unique(username(), 'username'),
+  unique(User, username(), 'username'),
   password(),
   firstName(),
   age().optional(),
   schemaValidation,
 ];
+
 const loginSchema = [username(), password(), schemaValidation];
 const deleteUserSchema = [id(), schemaValidation];
 
+const attributes = ['firstName', 'password', 'age'];
 const editUserSchema = [
   id(),
-  oneOf(
-    [
-      body('firstName', 'Attribute is not exist').exists(),
-      body('password', 'Attribute is not exist').exists(),
-      body('age', 'Attribute is not exist').exists(),
-    ],
-    'You must choose one attribute to edit from: {firstName, password, age}'
-  ),
+  optionalAttributesToEdit(attributes, body),
   firstName().optional(),
   password().optional(),
   age().optional(),

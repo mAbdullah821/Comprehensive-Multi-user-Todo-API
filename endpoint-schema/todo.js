@@ -7,18 +7,12 @@ const {
   limit,
 } = require('../input-validator/todo');
 const { id } = require('../input-validator/general');
+const {
+  sequentialValidation,
+  optionalAttributesToEdit,
+} = require('./helperFunctions');
 const schemaValidation = require('./schema-validation');
-const { oneOf, body } = require('express-validator');
-
-const sequentialValidation = (validations) => {
-  return async (req, res, next) => {
-    for (let validation of validations) {
-      const result = await validation.run(req);
-      if (result.errors.length) break;
-    }
-    next();
-  };
-};
+const { body } = require('express-validator');
 
 const createTodoSchema = [
   title(),
@@ -37,18 +31,10 @@ const todosPaginationUsingTagsSchema = [
   schemaValidation,
 ];
 
-const msg = 'Attribute is not provided';
-const optionalAttributesToEdit = () =>
-  oneOf(
-    ['title', 'status', 'tags'].map((attribute) =>
-      body(attribute, msg).exists()
-    ),
-    'Provide at least one attribute to edit from: {title, status, tags}'
-  );
-
+const attributes = ['title', 'status', 'tags'];
 const editTodoSchema = [
   id(),
-  optionalAttributesToEdit(),
+  optionalAttributesToEdit(attributes, body),
   title().optional(),
   status().optional(),
   sequentialValidation([tagsArray().optional(), tagsArrayElements()]),
