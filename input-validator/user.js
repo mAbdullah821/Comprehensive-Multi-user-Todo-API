@@ -1,23 +1,16 @@
 const { body } = require('express-validator');
+const { requiredString } = require('./general');
 
-const requiredStringBodyInput = (attribute) =>
-  body(attribute)
-    .exists({ checkNull: true, checkFalsy: true })
-    .withMessage(`Required, Provide the <${attribute}> attribute`)
-    .bail()
-    .isString()
-    .withMessage(`${attribute} must be a string`)
-    .bail();
-
-const username = () => requiredStringBodyInput('username').toLowerCase();
+const username = () =>
+  requiredString(body('username'), 'username').toLowerCase();
 
 const password = () =>
-  requiredStringBodyInput('password')
+  requiredString(body('password'), 'password')
     .isLength({ min: 6 })
     .withMessage('Password must be at least 6 characters');
 
 const firstName = () =>
-  requiredStringBodyInput('firstName')
+  requiredString(body('firstName'), 'firstName')
     .isLength({ min: 3, max: 15 })
     .withMessage(
       'firstName must be at least 3 characters long and at most 15 characters long'

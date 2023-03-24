@@ -1,12 +1,11 @@
 const mongoose = require('mongoose');
 const Todo = require('../models/todo');
-const { isValidId } = require('./helperFunctions');
 
 const createTodo = async (req, res, next) => {
   try {
     const userId = req.session.userId;
-    const { title, tags } = req.body;
-    const todo = await Todo.create({ userId, title, tags, status: 'to-do' });
+    const { title, tags, status } = req.body;
+    const todo = await Todo.create({ userId, title, tags, status });
     res.send({ message: 'Todo created successfully', todo });
   } catch (err) {
     err.statusCode = 404;
@@ -17,11 +16,8 @@ const createTodo = async (req, res, next) => {
 const todosPagination = async (req, res, next) => {
   try {
     const userId = req.session.userId;
-    const { skip = '0', limit = '10' } = req.query; // default values [skip = '0'] [limit = '10']
-    const todos = await Todo.find({ userId })
-      // .sort('createdAt')
-      .skip(+skip)
-      .limit(+limit);
+    const { skip, limit } = req.query; // default values [skip = 0] [limit = 10]
+    const todos = await Todo.find({ userId }).skip(skip).limit(limit);
     res.send({ resultsCount: todos.length, todos });
   } catch (err) {
     err.statusCode = 404;
@@ -31,12 +27,14 @@ const todosPagination = async (req, res, next) => {
 
 const getTodoById = async (req, res, next) => {
   try {
-    const userId = req.session.userId;
+    const userId = new mongoose.Types.ObjectId(req.session.userId);
     const todoId = req.params.id;
 
-    isValidId(todoId);
+    // isValidId(todoId);
 
     const todo = await Todo.findOne({ _id: todoId, userId });
+    if (!todo)
+      throw new Error('There is no Todo with that id, try another one');
     res.send(todo);
   } catch (err) {
     err.statusCode = 404;
@@ -47,11 +45,8 @@ const getTodoById = async (req, res, next) => {
 const todosPaginationUsingTags = async (req, res, next) => {
   try {
     const userId = new mongoose.Types.ObjectId(req.session.userId);
-    const { skip = '0', limit = '10' } = req.query;
-    let { tags } = req.body;
-
-    if (!tags) throw new Error('Please, Provide some tags');
-    tags = tags.map((tag) => tag.toString().toLowerCase());
+    const { skip, limit } = req.query;
+    const { tags } = req.body;
 
     const todos = await Todo.todoPaginationByTags({
       userId,
@@ -69,18 +64,14 @@ const todosPaginationUsingTags = async (req, res, next) => {
 
 const editTodo = async (req, res, next) => {
   try {
-    const userId = req.session.userId;
+    const userId = new mongoose.Types.ObjectId(req.session.userId);
     const todoId = req.params.id;
     const { title, status, tags } = req.body;
 
-    isValidId(todoId);
-
-    if (!title && !status && !tags)
-      throw new Error(
-        'Please, Provide some attributes for editing, choose from {title, status, tags}'
-      );
-
     let todo = await Todo.findOne({ _id: todoId, userId });
+
+    if (!todo)
+      throw new Error('There is no Todo with that id, try another one');
 
     if (title) todo.title = title;
     if (status) todo.status = status;
@@ -99,11 +90,10 @@ const removeTodo = async (req, res, next) => {
     const userId = req.session.userId;
     const todoId = req.params.id;
 
-    isValidId(todoId);
-
     const todo = await Todo.findOneAndDelete({ _id: todoId, userId });
 
-    if (!todo) throw new Error('Not found any todo with that <id>');
+    if (!todo)
+      throw new Error('There is no Todo with that id, try another one');
 
     res.send({ message: 'Delete a Todo successfully', todo });
   } catch (err) {

@@ -71,8 +71,8 @@ todoSchema.statics.todoPaginationByTags = function ({
     })
     .match({ matchedTagsCount: { $gt: 0 } })
     .sort({ matchedTagsCount: -1 })
-    .skip(+skip)
-    .limit(+limit);
+    .skip(skip)
+    .limit(limit);
 };
 const Todo = new mongoose.model('Todo', todoSchema);
 module.exports = Todo;

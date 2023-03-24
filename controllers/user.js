@@ -1,5 +1,4 @@
 const User = require('../models/user');
-const { isValidId } = require('./helperFunctions');
 
 const register = async (req, res, next) => {
   try {
