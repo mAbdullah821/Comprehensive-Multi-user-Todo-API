@@ -17,13 +17,7 @@ const login = async (req, res, next) => {
     const { username, password } = req.body;
     const user = await User.findByCredentials(username, password);
 
-    req.session.regenerate((err) => {
-      if (err) throw err;
-      req.session.userId = user._id;
-      req.session.save((err) => {
-        if (err) throw err;
-      });
-    });
+    req.createSession(user.id);
 
     const { todos } = await user.populate('todos');
 
@@ -40,12 +34,7 @@ const login = async (req, res, next) => {
 
 const logout = (req, res, next) => {
   try {
-    if (!req.session.userId) throw new Error('You are already logged out');
-
-    req.session.destroy((err) => {
-      if (err) return next(err);
-      res.send({ message: 'Logout successfully' });
-    });
+    req.logout(res, next);
   } catch (err) {
     err.statusCode = 404;
     next(err);

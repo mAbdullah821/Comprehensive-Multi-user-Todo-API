@@ -16,16 +16,25 @@ const {
   editUser,
 } = require('../controllers/user');
 
+const {
+  isAuthenticated,
+  addCreateSessionToReq,
+} = require('../authentication/session');
+
 router.post('/register', registerSchema, register);
 
-router.post('/login', loginSchema, login);
+router.post('/login', loginSchema, addCreateSessionToReq, login);
 
+router.use(isAuthenticated); // as a user
+
+// Endpoints for all users
 router.post('/logout', logout);
 
+router.patch('/:id', editUserSchema, editUser);
+
+// Endpoints for admin users
 router.get('/', getAllUsersFirstName);
 
 router.delete('/:id', deleteUserSchema, deleteUser);
-
-router.patch('/:id', editUserSchema, editUser);
 
 module.exports = router;
